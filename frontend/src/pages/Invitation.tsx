@@ -3,14 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import { invitationApi } from '../api/invitations';
-import { useI18n } from '../contexts/I18nContext';
 import './Invitation.css';
 
 export const Invitation: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
-  const { t } = useI18n();
+  const { user, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
@@ -55,16 +53,16 @@ export const Invitation: React.FC = () => {
 
   // 如果未登录，保存邀请token并重定向到登录页
   useEffect(() => {
-    if (!isAuthenticated && !isLoading && invitation && token) {
+    if (!user && !isLoading && invitation && token) {
       // 保存邀请token到localStorage，以便登录后自动处理
       localStorage.setItem('pendingInvitationToken', token);
       navigate('/login', { state: { returnTo: `/invitation/${token}` } });
     }
-  }, [isAuthenticated, isLoading, invitation, navigate, token]);
+  }, [user, isLoading, invitation, navigate, token]);
 
   // 如果已登录且邮箱匹配，自动接受邀请
   useEffect(() => {
-    if (isAuthenticated && user && invitation && !error) {
+    if (user && invitation && !error) {
       const emailMatch = user.email.toLowerCase() === invitation.inviteeEmail.toLowerCase();
       if (emailMatch && !acceptMutation.isPending && !rejectMutation.isPending) {
         // 自动接受邀请
@@ -73,7 +71,7 @@ export const Invitation: React.FC = () => {
         localStorage.removeItem('pendingInvitationToken');
       }
     }
-  }, [isAuthenticated, user, invitation, acceptMutation, rejectMutation, error]);
+  }, [user, invitation, acceptMutation, rejectMutation, error]);
 
   if (isLoading) {
     return (
@@ -135,7 +133,7 @@ export const Invitation: React.FC = () => {
           )}
         </div>
 
-        {isAuthenticated && emailMatch && (
+        {user && emailMatch && (
           <div className="invitation-actions">
             <button
               onClick={() => acceptMutation.mutate()}
@@ -154,7 +152,7 @@ export const Invitation: React.FC = () => {
           </div>
         )}
 
-        {!isAuthenticated && (
+        {!user && (
           <div className="invitation-actions">
             <button onClick={() => navigate('/login')} className="btn-primary">
               Sign In to Accept

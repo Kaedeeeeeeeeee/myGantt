@@ -450,9 +450,9 @@ function Dashboard() {
   }, [projects]);
 
   // Fetch current project's user role
-  const { data: currentProjectRole } = useQuery<ProjectRole>({
+  const { data: currentProjectRole } = useQuery<ProjectRole | undefined>({
     queryKey: ['projectRole', currentProjectId],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProjectRole | undefined> => {
       if (!currentProjectId || !user) return undefined;
       const members = await memberApi.getProjectMembers(currentProjectId);
       
@@ -470,7 +470,6 @@ function Dashboard() {
   });
 
   const canEdit = currentProjectRole === 'EDITOR' || currentProjectRole === 'ADMIN' || currentProjectRole === 'OWNER';
-  const canManageMembers = currentProjectRole === 'ADMIN' || currentProjectRole === 'OWNER';
   const canDeleteProject = currentProjectRole === 'OWNER';
 
   if (projectsLoading) {
