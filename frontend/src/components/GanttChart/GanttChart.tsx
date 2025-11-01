@@ -42,7 +42,7 @@ export const GanttChart = forwardRef<GanttChartRef, GanttChartProps>(({
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [drawingStart, setDrawingStart] = useState<{ x: number; date: Date; scrollLeft: number; rowIndex: number } | null>(null);
   const [drawingCurrent, setDrawingCurrent] = useState<{ x: number; rowIndex: number } | null>(null);
-  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
   const [isHoveringLastRow, setIsHoveringLastRow] = useState(false);
   const [lastRowHoveredDate, setLastRowHoveredDate] = useState<Date | null>(null);
@@ -405,7 +405,7 @@ export const GanttChart = forwardRef<GanttChartRef, GanttChartProps>(({
                   // 否则，需要等待长按检测
                   const shouldStartImmediately = isLastRow && isHoveringLastRow;
                   
-                  let timer: NodeJS.Timeout | null = null;
+                  let timer: ReturnType<typeof setTimeout> | null = null;
                   let hasEnteredDrawingMode = false; // 本地变量跟踪是否已进入绘制模式
                   
                   if (shouldStartImmediately) {
@@ -539,7 +539,6 @@ export const GanttChart = forwardRef<GanttChartRef, GanttChartProps>(({
               {Array.from({ length: days + 1 }).map((_, index) => {
                 const dayDate = new Date(startDate);
                 dayDate.setDate(dayDate.getDate() + index);
-                const today = new Date();
                 const dayOfWeek = dayDate.getDay();
                 const isWeekendColumn = dayOfWeek === 0 || dayOfWeek === 6; // 0 = 周日, 6 = 周六
                 // 只在头部悬停时（不是最后一行悬停）才应用整列高亮

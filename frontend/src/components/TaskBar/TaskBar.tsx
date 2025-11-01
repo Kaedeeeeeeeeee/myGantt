@@ -20,7 +20,7 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
   const [isProgressAdjusting, setIsProgressAdjusting] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, date: new Date(), hasMoved: false });
   const [resizeStart, setResizeStart] = useState({ x: 0, startDate: new Date(), endDate: new Date() });
-  const [progressStart, setProgressStart] = useState({ x: 0, progress: 0 });
+  const [, setProgressStart] = useState({ x: 0, progress: 0 });
   const isDeletingRef = useRef(false); // 防止重复删除
   const barRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -147,7 +147,7 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
     }
   };
 
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handleMouseUp = () => {
     if (!isDragging && !isResizing && !isProgressAdjusting) return;
     
     if (isDragging) {

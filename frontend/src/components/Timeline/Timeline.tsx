@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { formatDate, getDaysInRange, getCellWidth, getDaysBetween, formatYearMonth } from '../../utils/dateUtils';
+import { formatDate, getDaysInRange, getCellWidth, formatYearMonth } from '../../utils/dateUtils';
 import { useI18n } from '../../contexts/I18nContext';
 import { ViewMode } from '../../types';
 import './Timeline.css';

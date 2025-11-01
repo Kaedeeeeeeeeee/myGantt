@@ -23,13 +23,13 @@ const CURRENT_PROJECT_KEY = 'gantt-current-project';
 
 function Dashboard() {
   const { t } = useI18n();
-  const { logout, user } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const queryClient = useQueryClient();
   const [currentProjectId, setCurrentProjectIdState] = useState<string | null>(() => {
     return localStorage.getItem(CURRENT_PROJECT_KEY);
   });
-  const [viewMode, setViewMode] = useState<ViewMode>('day');
+  const [viewMode] = useState<ViewMode>('day');
   const [manualStartDate, setManualStartDate] = useState<Date | null>(null);
   const [manualEndDate, setManualEndDate] = useState<Date | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);

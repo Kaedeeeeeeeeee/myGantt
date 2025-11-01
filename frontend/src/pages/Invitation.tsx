@@ -8,14 +8,14 @@ import './Invitation.css';
 export const Invitation: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   // 获取邀请详情
   const {
     data: invitation,
-    isLoading,
+    isLoading: invitationLoading,
     error: invitationError,
   } = useQuery({
     queryKey: ['invitation', token],
@@ -53,12 +53,12 @@ export const Invitation: React.FC = () => {
 
   // 如果未登录，保存邀请token并重定向到登录页
   useEffect(() => {
-    if (!user && !isLoading && invitation && token) {
+    if (!user && !authLoading && invitation && token) {
       // 保存邀请token到localStorage，以便登录后自动处理
       localStorage.setItem('pendingInvitationToken', token);
       navigate('/login', { state: { returnTo: `/invitation/${token}` } });
     }
-  }, [user, isLoading, invitation, navigate, token]);
+  }, [user, authLoading, invitation, navigate, token]);
 
   // 如果已登录且邮箱匹配，自动接受邀请
   useEffect(() => {
@@ -73,7 +73,7 @@ export const Invitation: React.FC = () => {
     }
   }, [user, invitation, acceptMutation, rejectMutation, error]);
 
-  if (isLoading) {
+  if (invitationLoading) {
     return (
       <div className="invitation-container">
         <div className="invitation-card">

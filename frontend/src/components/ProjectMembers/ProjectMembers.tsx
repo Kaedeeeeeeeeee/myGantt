@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { memberApi } from '../../api/members';
 import { invitationApi } from '../../api/invitations';
-import { ProjectMember, ProjectRole, ProjectInvitation } from '../../types';
+import { ProjectMember, ProjectRole } from '../../types';
 import { InvitationModal } from '../InvitationModal/InvitationModal';
 import { generateInvitationLink } from '../../utils/invitation';
 import { useI18n } from '../../contexts/I18nContext';
