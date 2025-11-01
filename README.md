@@ -1,80 +1,85 @@
-# My Gantt - 项目甘特图应用
+# My Gantt - Project Gantt Chart Application
 
-一个功能完善的现代化甘特图应用，用于项目管理和任务跟踪。
+A feature-rich modern Gantt chart application for project management and task tracking.
 
-## 功能特性
+## Features
 
-- ✅ **任务管理**：创建、编辑、删除任务
-- ✅ **时间线视图**：支持日/周/月视图切换
-- ✅ **拖拽交互**：通过拖拽调整任务时间
-- ✅ **进度跟踪**：可视化任务完成进度
-- ✅ **资源分配**：支持分配负责人
-- ✅ **数据持久化**：自动保存到本地存储
-- ✅ **响应式设计**：适配不同屏幕尺寸
+- ✅ **Task Management**: Create, edit, and delete tasks
+- ✅ **Timeline View**: Switch between day/week/month views
+- ✅ **Drag & Drop**: Adjust task timelines by dragging
+- ✅ **Progress Tracking**: Visualize task completion progress
+- ✅ **Resource Allocation**: Assign assignees to tasks
+- ✅ **Data Persistence**: Auto-save to local storage
+- ✅ **Responsive Design**: Adapts to different screen sizes
+- ✅ **Multi-language Support**: Supports Chinese, English, and Japanese
 
-## 技术栈
+## Tech Stack
 
 - **React 18** + **TypeScript**
-- **Vite** - 构建工具
-- **date-fns** - 日期处理
-- **CSS3** - 样式和动画
+- **Vite** - Build tool
+- **date-fns** - Date handling
+- **CSS3** - Styling and animations
 
-## 快速开始
+## Quick Start
 
-### 安装依赖
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 启动开发服务器
+### Start Development Server
 
 ```bash
 npm run dev
 ```
 
-### 构建生产版本
+### Build for Production
 
 ```bash
 npm run build
 ```
 
-### 预览生产版本
+### Preview Production Build
 
 ```bash
 npm run preview
 ```
 
-## 项目结构
+## Project Structure
 
 ```
 src/
-├── components/          # React组件
-│   ├── GanttChart/     # 甘特图主组件
-│   ├── TaskBar/        # 任务条组件
-│   ├── TaskForm/       # 任务表单组件
-│   └── Timeline/       # 时间轴组件
-├── utils/              # 工具函数
-│   ├── dateUtils.ts    # 日期处理工具
-│   └── storage.ts      # 本地存储工具
-├── types.ts            # TypeScript类型定义
-├── App.tsx             # 主应用组件
-└── main.tsx            # 入口文件
+├── components/          # React components
+│   ├── GanttChart/     # Main Gantt chart component
+│   ├── TaskBar/        # Task bar component
+│   ├── TaskForm/       # Task form component
+│   ├── Timeline/       # Timeline component
+│   └── LanguageSwitcher/ # Language switcher component
+├── contexts/           # React contexts
+│   └── I18nContext.tsx # Internationalization context
+├── utils/              # Utility functions
+│   ├── dateUtils.ts    # Date handling utilities
+│   └── storage.ts      # Local storage utilities
+├── types.ts            # TypeScript type definitions
+├── App.tsx             # Main application component
+└── main.tsx            # Entry file
 ```
 
-## 使用说明
+## Usage
 
-1. **创建任务**：点击"新建任务"按钮，填写任务信息
-2. **编辑任务**：在任务列表中点击"编辑"按钮
-3. **调整时间**：在甘特图上直接拖拽任务条
-4. **切换视图**：使用顶部的日/周/月视图按钮
-5. **查看进度**：任务条中的深色部分表示完成进度
+1. **Create Tasks**: Click the "New Task" button and fill in task information
+2. **Edit Tasks**: Click the "Edit" button in the task list
+3. **Adjust Timeline**: Drag task bars directly on the Gantt chart
+4. **Switch Views**: Use the day/week/month view buttons at the top
+5. **View Progress**: The darker portion of task bars indicates completion progress
+6. **Switch Language**: Click the globe icon in the top right corner to change language
 
-## 未来计划
+## Future Plans
 
-- [ ] 任务依赖关系可视化
-- [ ] 多项目支持
-- [ ] 导出功能（PDF/Excel）
-- [ ] 协作功能
-- [ ] 里程碑标记
-- [ ] 资源管理
+- [ ] Task dependency visualization
+- [ ] Multi-project support
+- [ ] Export functionality (PDF/Excel)
+- [ ] Collaboration features
+- [ ] Milestone markers
+- [ ] Resource management
