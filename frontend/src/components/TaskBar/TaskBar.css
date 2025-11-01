@@ -1,0 +1,93 @@
+.task-bar {
+  position: absolute;
+  height: 30px;
+  margin-top: 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.task-bar:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 5;
+  transform: translateY(-1px);
+}
+
+.task-bar:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.task-bar.dragging {
+  opacity: 0.85;
+  z-index: 10;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.task-bar.resizing {
+  opacity: 0.9;
+  z-index: 10;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.task-bar-resize-handle {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 2;
+  background: transparent;
+}
+
+.task-bar-resize-handle-left {
+  left: 0;
+}
+
+.task-bar-resize-handle-right {
+  right: 0;
+}
+
+.task-bar-resize-handle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.task-bar-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  transition: width 0.2s ease;
+  border-radius: 6px 0 0 6px;
+  z-index: 1;
+}
+
+.task-bar-label {
+  position: absolute;
+  padding: 0 8px;
+  line-height: 30px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 2;
+  pointer-events: none;
+  top: 0;
+  transition: left 0.1s ease, color 0.1s ease;
+}
+
+.task-bar-label-white-text {
+  color: white;
+}
+
+.task-bar-label-dark-text {
+  color: #333;
+}
+
+.task-bar-progress-adjusting {
+  opacity: 0.9;
+  z-index: 10;
+}
