@@ -61,5 +61,3 @@ secrets.*
 tmp/
 temp/
 *.tmp
-backend/
-backend/
