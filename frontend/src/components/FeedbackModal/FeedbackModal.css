@@ -145,3 +145,13 @@
   line-height: 1.6;
 }
 
+.error-message {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 20px;
+  color: #721c24;
+  font-size: 14px;
+}
+
