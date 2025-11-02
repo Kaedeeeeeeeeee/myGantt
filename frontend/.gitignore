@@ -37,3 +37,7 @@ Thumbs.db
 coverage
 .nyc_output
 
+# Backend directory (independent repository)
+../backend/
+backend/
+
