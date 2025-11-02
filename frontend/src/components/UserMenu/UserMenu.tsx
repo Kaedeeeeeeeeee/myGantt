@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useI18n } from '../../contexts/I18nContext';
+import { FeedbackModal } from '../FeedbackModal/FeedbackModal';
 import './UserMenu.css';
 
 // Buy Me a Coffee 链接配置 - 可以从环境变量读取
@@ -7,7 +9,9 @@ const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL;
 
 export const UserMenu: React.FC = () => {
   const { user, logout } = useAuth();
+  const { t } = useI18n();
   const [showMenu, setShowMenu] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // 点击外部关闭菜单
@@ -33,6 +37,11 @@ export const UserMenu: React.FC = () => {
 
   const handleBuyMeACoffee = () => {
     window.open(BUY_ME_A_COFFEE_URL, '_blank');
+    setShowMenu(false);
+  };
+
+  const handleFeedback = () => {
+    setShowFeedbackModal(true);
     setShowMenu(false);
   };
 
@@ -91,6 +100,18 @@ export const UserMenu: React.FC = () => {
           <div className="user-menu-divider"></div>
           
           <button
+            className="user-menu-item"
+            onClick={handleFeedback}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>{t('menu.feedback')}</span>
+          </button>
+          
+          <div className="user-menu-divider"></div>
+          
+          <button
             className="user-menu-item user-menu-item-logout"
             onClick={handleLogout}
           >
@@ -102,6 +123,10 @@ export const UserMenu: React.FC = () => {
             <span>Logout</span>
           </button>
         </div>
+      )}
+
+      {showFeedbackModal && (
+        <FeedbackModal onClose={() => setShowFeedbackModal(false)} />
       )}
     </div>
   );
