@@ -141,7 +141,7 @@ function Dashboard() {
       
       return { previousTasks };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       // 如果更新失败，回滚到之前的状态
       if (context?.previousTasks) {
         queryClient.setQueryData(['tasks', currentProjectId], context.previousTasks);
@@ -290,7 +290,7 @@ function Dashboard() {
   };
 
   // 使用ref来存储防抖定时器
-  const updateTaskDebounceRef = useRef<{ [taskId: string]: NodeJS.Timeout }>({});
+  const updateTaskDebounceRef = useRef<{ [taskId: string]: number }>({});
 
   const handleTaskUpdate = (updatedTask: Task) => {
     if (!currentProjectId) return;
