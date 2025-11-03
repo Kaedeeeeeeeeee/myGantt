@@ -16,6 +16,7 @@ interface TaskBarProps {
 
 export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onUpdate, onClick, onDelete, canEdit = true }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isDragPending, setIsDragPending] = useState(false);
   const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
   const [isProgressAdjusting, setIsProgressAdjusting] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, date: new Date(), hasMoved: false });
@@ -26,10 +27,12 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
   const isDeletingRef = useRef(false); // 防止重复删除
   // 使用ref来跟踪拖拽状态，确保在事件处理器之间正确共享
   const dragStateRef = useRef({ hasMoved: false, hasUpdated: false, hasCalledUpdate: false });
+  const dragPhaseRef = useRef<'idle' | 'pending' | 'dragging'>('idle');
   const barRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const cellWidth = getCellWidth(viewMode);
   const RESIZE_HANDLE_WIDTH = 8; // 调整大小的手柄宽度
+  const DRAG_DISTANCE_THRESHOLD = 5; // 判定拖拽的最小像素距离
 
   // 标准化日期以确保计算准确
   const normalizeDate = (date: Date): Date => {
@@ -134,6 +137,9 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         e.preventDefault();
         e.stopPropagation();
         setIsProgressAdjusting(true);
+        setIsDragging(false);
+        setIsDragPending(false);
+        dragPhaseRef.current = 'idle';
         setProgressStart({
           x: e.clientX,
           progress: task.progress,
@@ -141,7 +147,9 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
       } else {
         // 开始拖拽或点击
         dragStateRef.current = { hasMoved: false, hasUpdated: false, hasCalledUpdate: false };
-        setIsDragging(true);
+        setIsDragPending(true);
+        setIsDragging(false);
+        dragPhaseRef.current = 'pending';
         setDragStart({ x: e.clientX, date: task.startDate, hasMoved: false });
       }
     }
@@ -253,21 +261,34 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
     }
   }, [isResizing, resizeStart, cellWidth, startDate, task, onUpdate]);
 
-  // 处理拖拽的逻辑
+  // 处理拖拽的逻辑（包含待确认与正式拖拽两个阶段）
   React.useEffect(() => {
-    if (isDragging) {
+    if (isDragPending || isDragging) {
       const initialX = dragStart.x;
       const initialDate = dragStart.date;
       
       const handleGlobalMouseMove = (e: MouseEvent) => {
-        const deltaX = Math.abs(e.clientX - initialX);
+        const deltaXRaw = e.clientX - initialX;
+        const deltaX = Math.abs(deltaXRaw);
+        let currentPhase = dragPhaseRef.current;
         
-        // 如果移动超过3px，就认为是拖拽（降低阈值以更敏感地检测拖拽）
-        if (deltaX > 3) {
-          dragStateRef.current.hasMoved = true;
+        if (currentPhase === 'pending') {
+          if (deltaX >= DRAG_DISTANCE_THRESHOLD) {
+            dragStateRef.current.hasMoved = true;
+            setIsDragPending(false);
+            setIsDragging(true);
+            dragPhaseRef.current = 'dragging';
+            currentPhase = 'dragging';
+          } else {
+            return;
+          }
         }
         
-        const deltaDays = Math.round((e.clientX - initialX) / cellWidth);
+        if (currentPhase !== 'dragging') {
+          return;
+        }
+
+        const deltaDays = Math.round(deltaXRaw / cellWidth);
         if (deltaDays === 0) {
           return;
         }
@@ -302,9 +323,12 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
       };
 
       const handleGlobalMouseUp = (e: MouseEvent) => {
-        // 阻止事件冒泡，防止触发其他点击事件
-        e.preventDefault();
-        e.stopPropagation();
+        const phaseAtEnd = dragPhaseRef.current;
+        if (phaseAtEnd === 'dragging') {
+          // 阻止事件冒泡，防止触发其他点击事件
+          e.preventDefault();
+          e.stopPropagation();
+        }
         
         // 立即移除事件监听器，防止继续响应鼠标移动
         document.removeEventListener('mousemove', handleGlobalMouseMove);
@@ -328,7 +352,9 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         
         // 重置拖拽状态
         dragStateRef.current = { hasMoved: false, hasUpdated: false, hasCalledUpdate: false };
+        dragPhaseRef.current = 'idle';
         setIsDragging(false);
+        setIsDragPending(false);
         setDragStart({ x: 0, date: new Date(), hasMoved: false });
         // 不立即清除本地状态，等待API响应后再清除
         // 这样可以避免在API响应返回前UI闪烁
@@ -342,7 +368,7 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         document.removeEventListener('mouseup', handleGlobalMouseUp);
       };
     }
-  }, [isDragging, dragStart.x, dragStart.date, cellWidth, taskDuration, startDate, task, onUpdate, onClick]);
+  }, [isDragPending, isDragging, dragStart.x, dragStart.date, cellWidth, taskDuration, startDate, task, onUpdate, onClick]);
 
   // 处理进度调整的逻辑
   React.useEffect(() => {
