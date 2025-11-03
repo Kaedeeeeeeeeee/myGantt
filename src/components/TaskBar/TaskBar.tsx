@@ -267,7 +267,55 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
       const initialX = dragStart.x;
       const initialDate = dragStart.date;
       
+      const handleGlobalMouseUp = (e: MouseEvent) => {
+        const phaseAtEnd = dragPhaseRef.current;
+        if (phaseAtEnd === 'idle' && !isDragPending && !isDragging) {
+          return;
+        }
+
+        if (phaseAtEnd === 'dragging') {
+          // 阻止事件冒泡，防止触发其他点击事件
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        
+        // 立即移除事件监听器，防止继续响应鼠标移动
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        
+        // 只有在没有移动、没有更新任务、且没有调用onUpdate的情况下，才认为是点击
+        // 如果hasMoved、hasUpdated或hasCalledUpdate为true，说明用户进行了拖拽操作，不应该打开详情面板
+        const { hasMoved, hasUpdated, hasCalledUpdate } = dragStateRef.current;
+        
+        // 如果调用了onUpdate，说明进行了拖拽操作，不应该打开详情面板
+        if (hasCalledUpdate) {
+          // 拖拽操作，不打开详情面板
+        } else if (hasMoved || hasUpdated) {
+          // 有移动或更新，不打开详情面板
+        } else {
+          // 真正的点击操作，打开详情面板
+          if (onClick) {
+            onClick();
+          }
+        }
+        
+        // 重置拖拽状态
+        dragStateRef.current = { hasMoved: false, hasUpdated: false, hasCalledUpdate: false };
+        dragPhaseRef.current = 'idle';
+        setIsDragging(false);
+        setIsDragPending(false);
+        setDragStart({ x: 0, date: new Date(), hasMoved: false });
+        // 不立即清除本地状态，等待API响应后再清除
+        // 这样可以避免在API响应返回前UI闪烁
+      };
+
       const handleGlobalMouseMove = (e: MouseEvent) => {
+        // 如果鼠标左键已经松开，但鼠标移动事件仍然触发，主动结束拖拽
+        if ((e.buttons & 1) === 0) {
+          handleGlobalMouseUp(e);
+          return;
+        }
+
         const deltaXRaw = e.clientX - initialX;
         const deltaX = Math.abs(deltaXRaw);
         let currentPhase = dragPhaseRef.current;
@@ -320,44 +368,6 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         // 标记已调用onUpdate，说明用户进行了拖拽操作
         dragStateRef.current.hasCalledUpdate = true;
         onUpdate(updatedTask);
-      };
-
-      const handleGlobalMouseUp = (e: MouseEvent) => {
-        const phaseAtEnd = dragPhaseRef.current;
-        if (phaseAtEnd === 'dragging') {
-          // 阻止事件冒泡，防止触发其他点击事件
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        
-        // 立即移除事件监听器，防止继续响应鼠标移动
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
-        
-        // 只有在没有移动、没有更新任务、且没有调用onUpdate的情况下，才认为是点击
-        // 如果hasMoved、hasUpdated或hasCalledUpdate为true，说明用户进行了拖拽操作，不应该打开详情面板
-        const { hasMoved, hasUpdated, hasCalledUpdate } = dragStateRef.current;
-        
-        // 如果调用了onUpdate，说明进行了拖拽操作，不应该打开详情面板
-        if (hasCalledUpdate) {
-          // 拖拽操作，不打开详情面板
-        } else if (hasMoved || hasUpdated) {
-          // 有移动或更新，不打开详情面板
-        } else {
-          // 真正的点击操作，打开详情面板
-          if (onClick) {
-            onClick();
-          }
-        }
-        
-        // 重置拖拽状态
-        dragStateRef.current = { hasMoved: false, hasUpdated: false, hasCalledUpdate: false };
-        dragPhaseRef.current = 'idle';
-        setIsDragging(false);
-        setIsDragPending(false);
-        setDragStart({ x: 0, date: new Date(), hasMoved: false });
-        // 不立即清除本地状态，等待API响应后再清除
-        // 这样可以避免在API响应返回前UI闪烁
       };
 
       document.addEventListener('mousemove', handleGlobalMouseMove);
