@@ -112,10 +112,43 @@ function Dashboard() {
     },
   });
 
-  // Update task mutation
+  // Update task mutation with optimistic update
   const updateTaskMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => taskApi.update(id, data),
+    onMutate: async ({ id, data }) => {
+      // 取消任何正在进行的查询，避免覆盖我们的乐观更新
+      await queryClient.cancelQueries({ queryKey: ['tasks', currentProjectId] });
+      
+      // 保存当前的任务快照
+      const previousTasks = queryClient.getQueryData<Task[]>(['tasks', currentProjectId]);
+      
+      // 乐观更新：立即更新UI
+      if (previousTasks) {
+        queryClient.setQueryData<Task[]>(['tasks', currentProjectId], (old) => {
+          if (!old) return old;
+          return old.map((task) =>
+            task.id === id
+              ? {
+                  ...task,
+                  ...data,
+                  startDate: data.startDate ? new Date(data.startDate) : task.startDate,
+                  endDate: data.endDate ? new Date(data.endDate) : task.endDate,
+                }
+              : task
+          );
+        });
+      }
+      
+      return { previousTasks };
+    },
+    onError: (err, variables, context) => {
+      // 如果更新失败，回滚到之前的状态
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['tasks', currentProjectId], context.previousTasks);
+      }
+    },
     onSuccess: () => {
+      // 成功后再刷新一次以确保数据同步
       queryClient.invalidateQueries({ queryKey: ['tasks', currentProjectId] });
     },
   });
@@ -222,6 +255,15 @@ function Dashboard() {
     }
   }, [startDate, endDate, tasksLoading]);
 
+  // 清理防抖定时器（组件卸载时）
+  useEffect(() => {
+    return () => {
+      Object.values(updateTaskDebounceRef.current).forEach((timer) => {
+        clearTimeout(timer);
+      });
+    };
+  }, []);
+
   // Click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -247,6 +289,9 @@ function Dashboard() {
     }
   };
 
+  // 使用ref来存储防抖定时器
+  const updateTaskDebounceRef = useRef<{ [taskId: string]: NodeJS.Timeout }>({});
+
   const handleTaskUpdate = (updatedTask: Task) => {
     if (!currentProjectId) return;
     
@@ -256,14 +301,28 @@ function Dashboard() {
       return;
     }
     
-    updateTaskMutation.mutate({
-      id: updatedTask.id,
-      data: {
-        startDate: updatedTask.startDate,
-        endDate: updatedTask.endDate,
-        progress: updatedTask.progress,
-      },
-    });
+    const taskId = updatedTask.id;
+    
+    // 清除之前的定时器（如果存在）
+    if (updateTaskDebounceRef.current[taskId]) {
+      clearTimeout(updateTaskDebounceRef.current[taskId]);
+    }
+    
+    // 立即进行乐观更新（通过TaskBar的本地状态已经处理了UI更新）
+    // 这里我们使用防抖来减少API请求频率
+    updateTaskDebounceRef.current[taskId] = setTimeout(() => {
+      updateTaskMutation.mutate({
+        id: taskId,
+        data: {
+          startDate: updatedTask.startDate,
+          endDate: updatedTask.endDate,
+          progress: updatedTask.progress,
+        },
+      });
+      
+      // 清理定时器引用
+      delete updateTaskDebounceRef.current[taskId];
+    }, 300); // 300ms防抖延迟，平衡响应性和请求频率
   };
 
   const handleTaskSave = (task: Task) => {

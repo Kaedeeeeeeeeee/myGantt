@@ -21,6 +21,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
   const [dragStart, setDragStart] = useState({ x: 0, date: new Date(), hasMoved: false });
   const [resizeStart, setResizeStart] = useState({ x: 0, startDate: new Date(), endDate: new Date() });
   const [, setProgressStart] = useState({ x: 0, progress: 0 });
+  // 添加本地状态来存储实时的拖动/调整值，用于立即显示UI效果
+  const [localTask, setLocalTask] = useState<Task | null>(null);
   const isDeletingRef = useRef(false); // 防止重复删除
   const barRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -32,9 +34,35 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   };
   
+  // 当task prop更新时，清除本地状态（表示API响应已返回）
+  React.useEffect(() => {
+    if (!isDragging && !isResizing && !isProgressAdjusting) {
+      // 只有当本地状态存在且与prop不同时才清除
+      // 这样可以避免在拖动过程中因为其他原因导致的prop更新而清除本地状态
+      if (localTask) {
+        const normalizedLocalStart = normalizeDate(localTask.startDate);
+        const normalizedPropStart = normalizeDate(task.startDate);
+        const normalizedLocalEnd = normalizeDate(localTask.endDate);
+        const normalizedPropEnd = normalizeDate(task.endDate);
+        
+        // 如果prop的数据与本地状态相同（在容差范围内），清除本地状态
+        const datesMatch = 
+          normalizedLocalStart.getTime() === normalizedPropStart.getTime() &&
+          normalizedLocalEnd.getTime() === normalizedPropEnd.getTime() &&
+          localTask.progress === task.progress;
+        
+        if (datesMatch) {
+          setLocalTask(null);
+        }
+      }
+    }
+  }, [task.id, task.startDate, task.endDate, task.progress, isDragging, isResizing, isProgressAdjusting, localTask]);
+  
+  // 使用本地状态或原始task来计算显示位置
+  const displayTask = localTask || task;
   const normalizedStartDate = normalizeDate(startDate);
-  const normalizedTaskStart = normalizeDate(task.startDate);
-  const normalizedTaskEnd = normalizeDate(task.endDate);
+  const normalizedTaskStart = normalizeDate(displayTask.startDate);
+  const normalizedTaskEnd = normalizeDate(displayTask.endDate);
   
   const daysFromStart = getDaysBetween(normalizedStartDate, normalizedTaskStart);
   const taskDuration = getDaysBetween(normalizedTaskStart, normalizedTaskEnd);
@@ -188,10 +216,13 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
           
           // 确保新的开始日期不晚于结束日期，且不早于甘特图起始日期
           if (normalizedNewStart < normalizedEnd && normalizedNewStart >= normalizedStart) {
-            onUpdate({
+            const updatedTask = {
               ...task,
               startDate: normalizedNewStart,
-            });
+            };
+            // 立即更新本地状态以显示实时效果
+            setLocalTask(updatedTask);
+            onUpdate(updatedTask);
           }
         } else if (isResizing === 'right') {
           // 调整右侧（结束日期）
@@ -202,10 +233,13 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
           
           // 确保新的结束日期不早于开始日期
           if (normalizedNewEnd > normalizedStart) {
-            onUpdate({
+            const updatedTask = {
               ...task,
               endDate: normalizedNewEnd,
-            });
+            };
+            // 立即更新本地状态以显示实时效果
+            setLocalTask(updatedTask);
+            onUpdate(updatedTask);
           }
         }
       };
@@ -213,6 +247,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
       const handleGlobalMouseUp = () => {
         setIsResizing(null);
         setResizeStart({ x: 0, startDate: new Date(), endDate: new Date() });
+        // 不立即清除本地状态，等待API响应后再清除
+        // 这样可以避免在API响应返回前UI闪烁
       };
 
       document.addEventListener('mousemove', handleGlobalMouseMove);
@@ -248,11 +284,14 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
           const newEndDate = new Date(newStartDate);
           newEndDate.setDate(newEndDate.getDate() + taskDuration);
           
-          onUpdate({
+          const updatedTask = {
             ...task,
             startDate: newStartDate,
             endDate: newEndDate,
-          });
+          };
+          // 立即更新本地状态以显示实时效果
+          setLocalTask(updatedTask);
+          onUpdate(updatedTask);
         }
       };
 
@@ -262,6 +301,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         }
         setIsDragging(false);
         setDragStart({ x: 0, date: new Date(), hasMoved: false });
+        // 不立即清除本地状态，等待API响应后再清除
+        // 这样可以避免在API响应返回前UI闪烁
       };
 
       document.addEventListener('mousemove', handleGlobalMouseMove);
@@ -282,15 +323,20 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         const x = e.clientX - barRect.left;
         const newProgress = Math.max(0, Math.min(100, (x / barRect.width) * 100));
         
-        onUpdate({
+        const updatedTask = {
           ...task,
           progress: Math.round(newProgress),
-        });
+        };
+        // 立即更新本地状态以显示实时效果
+        setLocalTask(updatedTask);
+        onUpdate(updatedTask);
       };
 
       const handleGlobalMouseUp = () => {
         setIsProgressAdjusting(false);
         setProgressStart({ x: 0, progress: 0 });
+        // 不立即清除本地状态，等待API响应后再清除
+        // 这样可以避免在API响应返回前UI闪烁
       };
 
       document.addEventListener('mousemove', handleGlobalMouseMove);
@@ -303,7 +349,7 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
     }
   }, [isProgressAdjusting, task, onUpdate]);
 
-  const progressWidth = (width * task.progress) / 100;
+  const progressWidth = (width * displayTask.progress) / 100;
 
   return (
     <div
@@ -344,7 +390,7 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
           }, 0);
         }
       }}
-      title={task.name}
+      title={displayTask.name}
     >
       {/* 左侧调整大小手柄 */}
       <div
@@ -357,13 +403,13 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         className="task-bar-progress"
         style={{ 
           width: `${progressWidth}px`,
-          backgroundColor: task.color || '#4a90e2',
+          backgroundColor: displayTask.color || '#4a90e2',
         }}
       />
       <div 
-        className={`task-bar-label ${task.progress > 25 ? 'task-bar-label-white-text' : 'task-bar-label-dark-text'}`}
+        className={`task-bar-label ${displayTask.progress > 25 ? 'task-bar-label-white-text' : 'task-bar-label-dark-text'}`}
       >
-        {task.name}
+        {displayTask.name}
       </div>
       
       {/* 右侧调整大小手柄 */}
