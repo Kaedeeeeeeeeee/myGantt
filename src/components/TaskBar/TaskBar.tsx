@@ -268,31 +268,37 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         }
         
         const deltaDays = Math.round((e.clientX - initialX) / cellWidth);
+        if (deltaDays === 0) {
+          return;
+        }
+
         const newStartDate = new Date(initialDate);
         newStartDate.setDate(newStartDate.getDate() + deltaDays);
-        
-        if (newStartDate >= startDate) {
-          const newEndDate = new Date(newStartDate);
-          newEndDate.setDate(newEndDate.getDate() + taskDuration);
-          
-          // 检查日期是否真的改变了
-          const normalizedNewStart = normalizeDate(newStartDate);
-          const normalizedInitialStart = normalizeDate(initialDate);
-          if (normalizedNewStart.getTime() !== normalizedInitialStart.getTime()) {
-            dragStateRef.current.hasUpdated = true;
-          }
-          
-          const updatedTask = {
-            ...task,
-            startDate: newStartDate,
-            endDate: newEndDate,
-          };
-          // 立即更新本地状态以显示实时效果
-          setLocalTask(updatedTask);
-          // 标记已调用onUpdate，说明用户进行了拖拽操作
-          dragStateRef.current.hasCalledUpdate = true;
-          onUpdate(updatedTask);
+        const normalizedNewStart = normalizeDate(newStartDate);
+        const normalizedStartBoundary = normalizeDate(startDate);
+        if (normalizedNewStart < normalizedStartBoundary) {
+          return;
         }
+        
+        const newEndDate = new Date(newStartDate);
+        newEndDate.setDate(newEndDate.getDate() + taskDuration);
+        const normalizedNewEnd = normalizeDate(newEndDate);
+        if (normalizedNewEnd <= normalizedNewStart) {
+          return;
+        }
+        
+        dragStateRef.current.hasUpdated = true;
+        
+        const updatedTask = {
+          ...task,
+          startDate: newStartDate,
+          endDate: newEndDate,
+        };
+        // 立即更新本地状态以显示实时效果
+        setLocalTask(updatedTask);
+        // 标记已调用onUpdate，说明用户进行了拖拽操作
+        dragStateRef.current.hasCalledUpdate = true;
+        onUpdate(updatedTask);
       };
 
       const handleGlobalMouseUp = (e: MouseEvent) => {
