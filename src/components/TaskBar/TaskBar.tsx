@@ -24,6 +24,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
   // 添加本地状态来存储实时的拖动/调整值，用于立即显示UI效果
   const [localTask, setLocalTask] = useState<Task | null>(null);
   const isDeletingRef = useRef(false); // 防止重复删除
+  // 使用ref来跟踪拖拽状态，确保在事件处理器之间正确共享
+  const dragStateRef = useRef({ hasMoved: false, hasUpdated: false, hasCalledUpdate: false });
   const barRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const cellWidth = getCellWidth(viewMode);
@@ -138,6 +140,7 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         });
       } else {
         // 开始拖拽或点击
+        dragStateRef.current = { hasMoved: false, hasUpdated: false, hasCalledUpdate: false };
         setIsDragging(true);
         setDragStart({ x: e.clientX, date: task.startDate, hasMoved: false });
       }
@@ -175,28 +178,17 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
     }
   };
 
-  const handleMouseUp = () => {
-    if (!isDragging && !isResizing && !isProgressAdjusting) return;
-    
-    if (isDragging) {
-      // 如果鼠标没有移动，认为是点击事件
-      if (!dragStart.hasMoved && onClick) {
-        onClick();
-      }
-      
-      setIsDragging(false);
-      setDragStart({ x: 0, date: new Date(), hasMoved: false });
+  const handleMouseUp = (e: React.MouseEvent) => {
+    // 如果正在进行拖拽、调整大小或进度调整，不在本地处理mouseup事件
+    // 这些操作都使用全局事件处理器来处理，避免冲突
+    if (isDragging || isResizing || isProgressAdjusting) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
     }
     
-    if (isResizing) {
-      setIsResizing(null);
-      setResizeStart({ x: 0, startDate: new Date(), endDate: new Date() });
-    }
-    
-    if (isProgressAdjusting) {
-      setIsProgressAdjusting(false);
-      setProgressStart({ x: 0, progress: 0 });
-    }
+    // 如果没有任何操作在进行，这个函数实际上不应该被调用
+    // 因为点击操作应该在handleGlobalMouseUp中处理
   };
 
   // 处理调整大小的逻辑
@@ -264,16 +256,15 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
   // 处理拖拽的逻辑
   React.useEffect(() => {
     if (isDragging) {
-      let hasMoved = false;
       const initialX = dragStart.x;
       const initialDate = dragStart.date;
       
       const handleGlobalMouseMove = (e: MouseEvent) => {
         const deltaX = Math.abs(e.clientX - initialX);
         
-        // 如果移动超过5px，认为是拖拽
-        if (deltaX > 5) {
-          hasMoved = true;
+        // 如果移动超过3px，就认为是拖拽（降低阈值以更敏感地检测拖拽）
+        if (deltaX > 3) {
+          dragStateRef.current.hasMoved = true;
         }
         
         const deltaDays = Math.round((e.clientX - initialX) / cellWidth);
@@ -284,6 +275,13 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
           const newEndDate = new Date(newStartDate);
           newEndDate.setDate(newEndDate.getDate() + taskDuration);
           
+          // 检查日期是否真的改变了
+          const normalizedNewStart = normalizeDate(newStartDate);
+          const normalizedInitialStart = normalizeDate(initialDate);
+          if (normalizedNewStart.getTime() !== normalizedInitialStart.getTime()) {
+            dragStateRef.current.hasUpdated = true;
+          }
+          
           const updatedTask = {
             ...task,
             startDate: newStartDate,
@@ -291,14 +289,39 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
           };
           // 立即更新本地状态以显示实时效果
           setLocalTask(updatedTask);
+          // 标记已调用onUpdate，说明用户进行了拖拽操作
+          dragStateRef.current.hasCalledUpdate = true;
           onUpdate(updatedTask);
         }
       };
 
-      const handleGlobalMouseUp = () => {
-        if (!hasMoved && onClick) {
-          onClick();
+      const handleGlobalMouseUp = (e: MouseEvent) => {
+        // 阻止事件冒泡，防止触发其他点击事件
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // 立即移除事件监听器，防止继续响应鼠标移动
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+        
+        // 只有在没有移动、没有更新任务、且没有调用onUpdate的情况下，才认为是点击
+        // 如果hasMoved、hasUpdated或hasCalledUpdate为true，说明用户进行了拖拽操作，不应该打开详情面板
+        const { hasMoved, hasUpdated, hasCalledUpdate } = dragStateRef.current;
+        
+        // 如果调用了onUpdate，说明进行了拖拽操作，不应该打开详情面板
+        if (hasCalledUpdate) {
+          // 拖拽操作，不打开详情面板
+        } else if (hasMoved || hasUpdated) {
+          // 有移动或更新，不打开详情面板
+        } else {
+          // 真正的点击操作，打开详情面板
+          if (onClick) {
+            onClick();
+          }
         }
+        
+        // 重置拖拽状态
+        dragStateRef.current = { hasMoved: false, hasUpdated: false, hasCalledUpdate: false };
         setIsDragging(false);
         setDragStart({ x: 0, date: new Date(), hasMoved: false });
         // 不立即清除本地状态，等待API响应后再清除
