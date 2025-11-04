@@ -17,6 +17,13 @@ interface TaskFormProps {
 export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser, onSave, onCancel }) => {
   const { t } = useI18n();
   
+  // 调试日志：组件渲染时打印props
+  console.log('[TaskForm] Component rendered:', {
+    task: task ? `Task(${task.id})` : 'null',
+    projectId,
+    currentUser: currentUser ? { id: currentUser.id, name: currentUser.name, email: currentUser.email } : 'null',
+  });
+  
   // 获取项目成员列表（包含项目所有者，因为createProject会将所有者添加到ProjectMember表中）
   const { data: members = [] } = useQuery<ProjectMember[]>({
     queryKey: ['projectMembers', projectId],
@@ -26,13 +33,24 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser
 
   // 计算默认负责人（优先使用name，否则使用email）
   const getDefaultAssignee = (): string => {
-    if (!currentUser) return '';
-    return currentUser.name || currentUser.email || '';
+    if (!currentUser) {
+      console.log('[TaskForm] getDefaultAssignee: currentUser is null');
+      return '';
+    }
+    const assignee = currentUser.name || currentUser.email || '';
+    console.log('[TaskForm] getDefaultAssignee:', assignee);
+    return assignee;
   };
 
   const [formData, setFormData] = useState<Partial<Task>>(() => {
     // 初始化时，如果是创建新任务且currentUser可用，设置默认负责人
     const defaultAssignee = !task && currentUser ? (currentUser.name || currentUser.email || '') : '';
+    console.log('[TaskForm] useState init:', {
+      isNewTask: !task,
+      currentUser: currentUser ? 'exists' : 'null',
+      defaultAssignee,
+      taskAssignee: task?.assignee,
+    });
     
     return {
       name: '',
@@ -46,27 +64,47 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser
   });
 
   useEffect(() => {
+    console.log('[TaskForm] useEffect triggered:', {
+      task: task ? `Task(${task.id})` : 'null',
+      currentUser: currentUser ? { id: currentUser.id, name: currentUser.name, email: currentUser.email } : 'null',
+      currentFormDataAssignee: formData.assignee,
+    });
+    
     if (task) {
       // 编辑现有任务，使用任务的assignee
+      console.log('[TaskForm] Editing task, setting assignee to:', task.assignee);
       setFormData(task);
     } else {
       // 创建新任务，默认设置创建人为负责人
       const defaultAssignee = getDefaultAssignee();
+      console.log('[TaskForm] Creating new task, defaultAssignee:', defaultAssignee);
       // 只有当defaultAssignee有值时才更新，避免覆盖用户已选择的值
       if (defaultAssignee) {
-        setFormData(prev => ({
-          ...prev,
-          name: '',
-          startDate: new Date(),
-          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          progress: 5,
-          assignee: defaultAssignee,
-          description: '',
-          color: '#4a90e2',
-        }));
+        console.log('[TaskForm] Updating formData with defaultAssignee:', defaultAssignee);
+        setFormData(prev => {
+          const updated = {
+            ...prev,
+            name: '',
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            progress: 5,
+            assignee: defaultAssignee,
+            description: '',
+            color: '#4a90e2',
+          };
+          console.log('[TaskForm] setFormData updated assignee to:', updated.assignee);
+          return updated;
+        });
+      } else {
+        console.log('[TaskForm] defaultAssignee is empty, not updating');
       }
     }
   }, [task, currentUser]);
+
+  // 调试日志：formData变化时打印
+  useEffect(() => {
+    console.log('[TaskForm] formData.assignee changed to:', formData.assignee);
+  }, [formData.assignee]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,17 +213,27 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser
             <label>{t('task.assignee')}</label>
             <select
               value={formData.assignee || ''}
-              onChange={(e) => setFormData({ ...formData, assignee: e.target.value })}
+              onChange={(e) => {
+                console.log('[TaskForm] Assignee changed to:', e.target.value);
+                setFormData({ ...formData, assignee: e.target.value });
+              }}
             >
               <option value="">-- {t('task.assignee.select') || '请选择负责人'} --</option>
-              {members.map((member) => {
-                const displayName = member.user.name || member.user.email;
-                return (
-                  <option key={member.userId} value={displayName}>
-                    {displayName}
-                  </option>
-                );
-              })}
+              {(() => {
+                console.log('[TaskForm] Rendering members dropdown:', {
+                  membersCount: members.length,
+                  members: members.map(m => ({ userId: m.userId, displayName: m.user.name || m.user.email })),
+                  currentAssignee: formData.assignee,
+                });
+                return members.map((member) => {
+                  const displayName = member.user.name || member.user.email;
+                  return (
+                    <option key={member.userId} value={displayName}>
+                      {displayName}
+                    </option>
+                  );
+                });
+              })()}
             </select>
           </div>
 
