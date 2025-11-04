@@ -432,21 +432,30 @@ function Dashboard() {
       setShowPermissionToast(true);
       return;
     }
-    
+
+    const defaultAssignee =
+      user && (user.name || user.email)
+        ? user.name || user.email
+        : '';
+    const taskWithAssignee: Task = {
+      ...task,
+      assignee: task.assignee || (defaultAssignee || undefined),
+    };
+
     createTaskMutation.mutate({
       projectId: currentProjectId,
       data: {
-        name: task.name,
-        startDate: task.startDate,
-        endDate: task.endDate,
-        progress: task.progress || 5,
-        color: task.color || '#4a90e2',
-        assignee: task.assignee,
-        description: task.description,
-        dependencies: task.dependencies || [],
+        name: taskWithAssignee.name,
+        startDate: taskWithAssignee.startDate,
+        endDate: taskWithAssignee.endDate,
+        progress: taskWithAssignee.progress || 5,
+        color: taskWithAssignee.color || '#4a90e2',
+        assignee: taskWithAssignee.assignee,
+        description: taskWithAssignee.description,
+        dependencies: taskWithAssignee.dependencies || [],
       },
     });
-    setEditingTask(task);
+    setEditingTask(taskWithAssignee);
     setShowTaskForm(true);
   };
 
@@ -854,4 +863,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
