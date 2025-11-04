@@ -1,17 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Task } from '../../types';
+import { useQuery } from '@tanstack/react-query';
+import { Task, ProjectMember, User } from '../../types';
 import { useI18n } from '../../contexts/I18nContext';
 import { formatDate } from '../../utils/dateUtils';
+import { memberApi } from '../../api/members';
 import './TaskForm.css';
 
 interface TaskFormProps {
   task?: Task;
+  projectId?: string;
+  currentUser?: User | null;
   onSave: (task: Task) => void;
   onCancel: () => void;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel }) => {
+export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser, onSave, onCancel }) => {
   const { t } = useI18n();
+  
+  // 获取项目成员列表（包含项目所有者，因为createProject会将所有者添加到ProjectMember表中）
+  const { data: members = [] } = useQuery<ProjectMember[]>({
+    queryKey: ['projectMembers', projectId],
+    queryFn: () => memberApi.getProjectMembers(projectId!),
+    enabled: !!projectId,
+  });
+
   const [formData, setFormData] = useState<Partial<Task>>({
     name: '',
     startDate: new Date(),
@@ -24,9 +36,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel }) =>
 
   useEffect(() => {
     if (task) {
+      // 编辑现有任务，使用任务的assignee
       setFormData(task);
+    } else {
+      // 创建新任务，默认设置创建人为负责人
+      // 获取当前用户的显示名称（优先使用name，否则使用email）
+      const defaultAssignee = currentUser ? (currentUser.name || currentUser.email || '') : '';
+      setFormData({
+        name: '',
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        progress: 5,
+        assignee: defaultAssignee,
+        description: '',
+        color: '#4a90e2',
+      });
     }
-  }, [task]);
+  }, [task, currentUser?.id, currentUser?.name, currentUser?.email]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,12 +159,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel }) =>
 
           <div className="form-group">
             <label>{t('task.assignee')}</label>
-            <input
-              type="text"
+            <select
               value={formData.assignee || ''}
               onChange={(e) => setFormData({ ...formData, assignee: e.target.value })}
-              placeholder={t('task.assignee.placeholder')}
-            />
+            >
+              <option value="">-- {t('task.assignee.select') || '请选择负责人'} --</option>
+              {members.map((member) => {
+                const displayName = member.user.name || member.user.email;
+                return (
+                  <option key={member.userId} value={displayName}>
+                    {displayName}
+                  </option>
+                );
+              })}
+            </select>
           </div>
 
           <div className="form-group">

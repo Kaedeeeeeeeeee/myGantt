@@ -834,7 +834,13 @@ function Dashboard() {
       </main>
 
       {showTaskForm && (
-        <TaskForm task={editingTask} onSave={handleTaskSave} onCancel={handleTaskFormCancel} />
+        <TaskForm 
+          task={editingTask} 
+          projectId={currentProjectId || undefined}
+          currentUser={user}
+          onSave={handleTaskSave} 
+          onCancel={handleTaskFormCancel} 
+        />
       )}
 
       {/* 权限提示 Toast */}
