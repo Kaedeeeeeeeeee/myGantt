@@ -81,7 +81,7 @@
 }
 
 .task-bar.has-avatar .task-bar-label {
-  left: 12px;
+  left: 20px;
 }
 
 .task-bar-label-white-text {
@@ -99,7 +99,7 @@
 
 .task-bar-avatar {
   position: absolute;
-  left: -16px;
+  left: -8px;
   top: 50%;
   transform: translateY(-50%);
   width: 24px;
