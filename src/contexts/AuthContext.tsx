@@ -2,13 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { invitationApi } from '../api/invitations';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string | null;
-  avatarUrl: string | null;
-}
+import { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
