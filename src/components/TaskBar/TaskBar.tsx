@@ -382,36 +382,50 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
 
   // 处理进度调整的逻辑
   React.useEffect(() => {
-    if (isProgressAdjusting && barRef.current) {
-      const handleGlobalMouseMove = (e: MouseEvent) => {
-        const barRect = barRef.current!.getBoundingClientRect();
-        const x = e.clientX - barRect.left;
-        const newProgress = Math.max(0, Math.min(100, (x / barRect.width) * 100));
-        
-        const updatedTask = {
-          ...task,
-          progress: Math.round(newProgress),
-        };
-        // 立即更新本地状态以显示实时效果
-        setLocalTask(updatedTask);
-        onUpdate(updatedTask);
-      };
-
-      const handleGlobalMouseUp = () => {
-        setIsProgressAdjusting(false);
-        setProgressStart({ x: 0, progress: 0 });
-        // 不立即清除本地状态，等待API响应后再清除
-        // 这样可以避免在API响应返回前UI闪烁
-      };
-
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-
-      return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
-      };
+    if (!isProgressAdjusting || !barRef.current) {
+      return;
     }
+
+    function finishProgressAdjustment() {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      setIsProgressAdjusting(false);
+      setProgressStart({ x: 0, progress: 0 });
+      // 不立即清除本地状态，等待API响应后再清除
+      // 这样可以避免在API响应返回前UI闪烁
+    }
+
+    function handleGlobalMouseMove(e: MouseEvent) {
+      // 鼠标松开但仍然触发 mousemove 时，主动结束进度调整
+      if ((e.buttons & 1) === 0) {
+        finishProgressAdjustment();
+        return;
+      }
+
+      const barRect = barRef.current!.getBoundingClientRect();
+      const x = e.clientX - barRect.left;
+      const newProgress = Math.max(0, Math.min(100, (x / barRect.width) * 100));
+      
+      const updatedTask = {
+        ...task,
+        progress: Math.round(newProgress),
+      };
+      // 立即更新本地状态以显示实时效果
+      setLocalTask(updatedTask);
+      onUpdate(updatedTask);
+    }
+
+    function handleGlobalMouseUp() {
+      finishProgressAdjustment();
+    }
+
+    document.addEventListener('mousemove', handleGlobalMouseMove);
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
   }, [isProgressAdjusting, task, onUpdate]);
 
   const progressWidth = (width * displayTask.progress) / 100;
