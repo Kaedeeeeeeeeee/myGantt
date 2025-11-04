@@ -68,7 +68,6 @@ function Dashboard() {
   // Fetch project members for current project
   const {
     data: projectMembers = [],
-    isLoading: membersLoading,
   } = useQuery<ProjectMember[]>({
     queryKey: ['projectMembers', currentProjectId],
     queryFn: () => memberApi.getProjectMembers(currentProjectId!),
