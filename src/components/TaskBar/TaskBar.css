@@ -77,6 +77,11 @@
   pointer-events: none;
   top: 0;
   transition: left 0.1s ease, color 0.1s ease;
+  left: 0;
+}
+
+.task-bar.has-avatar .task-bar-label {
+  left: 12px;
 }
 
 .task-bar-label-white-text {
@@ -90,4 +95,40 @@
 .task-bar-progress-adjusting {
   opacity: 0.9;
   z-index: 10;
+}
+
+.task-bar-avatar {
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 3;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  pointer-events: none;
+}
+
+.task-bar-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.task-bar-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4a90e2;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  user-select: none;
 }

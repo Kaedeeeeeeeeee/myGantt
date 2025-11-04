@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Task } from '../../types';
+import { Task, ProjectMember } from '../../types';
 import { getDaysBetween, getCellWidth } from '../../utils/dateUtils';
 import { ViewMode } from '../../types';
 import './TaskBar.css';
@@ -12,9 +12,10 @@ interface TaskBarProps {
   onClick?: () => void;
   onDelete?: () => void;
   canEdit?: boolean;
+  projectMembers?: ProjectMember[];
 }
 
-export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onUpdate, onClick, onDelete, canEdit = true }) => {
+export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onUpdate, onClick, onDelete, canEdit = true, projectMembers = [] }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isDragPending, setIsDragPending] = useState(false);
   const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
@@ -430,10 +431,20 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
 
   const progressWidth = (width * displayTask.progress) / 100;
 
+  // 根据task.assignee查找对应的成员信息
+  const assigneeMember = React.useMemo(() => {
+    if (!task.assignee || !projectMembers.length) return null;
+    return projectMembers.find(
+      (member) => 
+        (member.user.name && member.user.name === task.assignee) ||
+        (member.user.email && member.user.email === task.assignee)
+    ) || null;
+  }, [task.assignee, projectMembers]);
+
   return (
     <div
       ref={barRef}
-      className={`task-bar ${isDragging ? 'dragging' : ''} ${isResizing ? 'resizing' : ''} ${isProgressAdjusting ? 'progress-adjusting' : ''}`}
+      className={`task-bar ${isDragging ? 'dragging' : ''} ${isResizing ? 'resizing' : ''} ${isProgressAdjusting ? 'progress-adjusting' : ''} ${assigneeMember ? 'has-avatar' : ''}`}
       style={{
         left: `${left}px`,
         width: `${width}px`,
@@ -476,6 +487,23 @@ export const TaskBar: React.FC<TaskBarProps> = ({ task, startDate, viewMode, onU
         className="task-bar-resize-handle task-bar-resize-handle-left"
         style={{ width: `${RESIZE_HANDLE_WIDTH}px` }}
       />
+      
+      {/* 负责人头像 */}
+      {assigneeMember && (
+        <div className="task-bar-avatar">
+          {assigneeMember.user.avatarUrl ? (
+            <img
+              src={assigneeMember.user.avatarUrl}
+              alt={assigneeMember.user.name || assigneeMember.user.email}
+              className="task-bar-avatar-img"
+            />
+          ) : (
+            <div className="task-bar-avatar-placeholder">
+              {(assigneeMember.user.name || assigneeMember.user.email).charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+      )}
       
       <div
         ref={progressRef}

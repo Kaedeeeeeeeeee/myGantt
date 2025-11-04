@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Task, ViewMode, Project, ProjectRole } from '../types';
+import { Task, ViewMode, Project, ProjectRole, ProjectMember } from '../types';
 import { GanttChart, GanttChartRef } from '../components/GanttChart/GanttChart';
 import { TaskForm } from '../components/TaskForm/TaskForm';
 import { LanguageSwitcher } from '../components/LanguageSwitcher/LanguageSwitcher';
@@ -62,6 +62,16 @@ function Dashboard() {
   } = useQuery<Task[]>({
     queryKey: ['tasks', currentProjectId],
     queryFn: () => taskApi.getByProjectId(currentProjectId!),
+    enabled: !!currentProjectId,
+  });
+
+  // Fetch project members for current project
+  const {
+    data: projectMembers = [],
+    isLoading: membersLoading,
+  } = useQuery<ProjectMember[]>({
+    queryKey: ['projectMembers', currentProjectId],
+    queryFn: () => memberApi.getProjectMembers(currentProjectId!),
     enabled: !!currentProjectId,
   });
 
@@ -838,6 +848,7 @@ function Dashboard() {
             onNewTask={handleNewTask}
             onTaskCreateFromDrag={handleTaskCreateFromDrag}
             canEdit={canEdit}
+            projectMembers={projectMembers}
           />
         )}
       </main>

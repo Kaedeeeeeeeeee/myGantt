@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Task, ViewMode } from '../../types';
+import { Task, ViewMode, ProjectMember } from '../../types';
 import { Timeline } from '../Timeline/Timeline';
 import { TaskBar } from '../TaskBar/TaskBar';
 import { useI18n } from '../../contexts/I18nContext';
@@ -18,6 +18,7 @@ interface GanttChartProps {
   onNewTask?: () => void;
   onTaskCreateFromDrag?: (task: Task) => void;
   canEdit?: boolean;
+  projectMembers?: ProjectMember[];
 }
 
 export interface GanttChartRef {
@@ -36,6 +37,7 @@ export const GanttChart = forwardRef<GanttChartRef, GanttChartProps>(({
   onNewTask,
   onTaskCreateFromDrag,
   canEdit = true,
+  projectMembers = [],
 }, ref) => {
   const { t } = useI18n();
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -618,6 +620,7 @@ export const GanttChart = forwardRef<GanttChartRef, GanttChartProps>(({
                     };
                   })() : undefined}
                   canEdit={canEdit}
+                  projectMembers={projectMembers}
                 />
               </div>
             ))}
