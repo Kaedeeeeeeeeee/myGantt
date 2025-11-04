@@ -43,10 +43,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser
   };
 
   const [formData, setFormData] = useState<Partial<Task>>(() => {
+    // 判断是否是编辑任务：task存在且有id
+    const isEditingTask = task && task.id;
     // 初始化时，如果是创建新任务且currentUser可用，设置默认负责人
-    const defaultAssignee = !task && currentUser ? (currentUser.name || currentUser.email || '') : '';
+    const defaultAssignee = !isEditingTask && currentUser ? (currentUser.name || currentUser.email || '') : '';
     console.log('[TaskForm] useState init:', {
-      isNewTask: !task,
+      isNewTask: !isEditingTask,
+      taskId: task?.id,
       currentUser: currentUser ? 'exists' : 'null',
       defaultAssignee,
       taskAssignee: task?.assignee,
@@ -66,11 +69,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser
   useEffect(() => {
     console.log('[TaskForm] useEffect triggered:', {
       task: task ? `Task(${task.id})` : 'null',
+      taskId: task?.id,
+      hasTaskId: !!(task && task.id),
       currentUser: currentUser ? { id: currentUser.id, name: currentUser.name, email: currentUser.email } : 'null',
       currentFormDataAssignee: formData.assignee,
     });
     
-    if (task) {
+    // 判断是否是编辑任务：task存在且有id
+    if (task && task.id) {
       // 编辑现有任务，使用任务的assignee
       console.log('[TaskForm] Editing task, setting assignee to:', task.assignee);
       setFormData(task);
