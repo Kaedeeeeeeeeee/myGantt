@@ -24,14 +24,25 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser
     enabled: !!projectId,
   });
 
-  const [formData, setFormData] = useState<Partial<Task>>({
-    name: '',
-    startDate: new Date(),
-    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 默认7天
-    progress: 5, // 默认5%，便于直接拖动调整进度
-    assignee: '',
-    description: '',
-    color: '#4a90e2',
+  // 计算默认负责人（优先使用name，否则使用email）
+  const getDefaultAssignee = (): string => {
+    if (!currentUser) return '';
+    return currentUser.name || currentUser.email || '';
+  };
+
+  const [formData, setFormData] = useState<Partial<Task>>(() => {
+    // 初始化时，如果是创建新任务且currentUser可用，设置默认负责人
+    const defaultAssignee = !task && currentUser ? (currentUser.name || currentUser.email || '') : '';
+    
+    return {
+      name: '',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      progress: 5,
+      assignee: task?.assignee || defaultAssignee,
+      description: '',
+      color: '#4a90e2',
+    };
   });
 
   useEffect(() => {
@@ -40,19 +51,22 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, currentUser
       setFormData(task);
     } else {
       // 创建新任务，默认设置创建人为负责人
-      // 获取当前用户的显示名称（优先使用name，否则使用email）
-      const defaultAssignee = currentUser ? (currentUser.name || currentUser.email || '') : '';
-      setFormData({
-        name: '',
-        startDate: new Date(),
-        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        progress: 5,
-        assignee: defaultAssignee,
-        description: '',
-        color: '#4a90e2',
-      });
+      const defaultAssignee = getDefaultAssignee();
+      // 只有当defaultAssignee有值时才更新，避免覆盖用户已选择的值
+      if (defaultAssignee) {
+        setFormData(prev => ({
+          ...prev,
+          name: '',
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          progress: 5,
+          assignee: defaultAssignee,
+          description: '',
+          color: '#4a90e2',
+        }));
+      }
     }
-  }, [task, currentUser?.id, currentUser?.name, currentUser?.email]);
+  }, [task, currentUser]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
