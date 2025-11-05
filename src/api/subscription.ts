@@ -14,8 +14,8 @@ export interface SubscriptionPlanInfo {
   plan: SubscriptionPlan;
   name: string;
   limits: {
-    maxProjects: number | typeof Infinity;
-    maxMembersPerProject: number | typeof Infinity;
+    maxProjects: number | string; // 'unlimited' for Infinity
+    maxMembersPerProject: number | string; // 'unlimited' for Infinity
   };
   monthlyPrice?: number;
   yearlyPrice?: number;
@@ -30,8 +30,8 @@ export interface CurrentSubscription {
   endDate: Date | null;
   isFirstTimeSubscriber: boolean;
   limits: {
-    maxProjects: number | typeof Infinity;
-    maxMembersPerProject: number | typeof Infinity;
+    maxProjects: number | string; // 'unlimited' for Infinity
+    maxMembersPerProject: number | string; // 'unlimited' for Infinity
   };
 }
 

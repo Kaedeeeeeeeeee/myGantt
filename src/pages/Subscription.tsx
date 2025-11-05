@@ -37,11 +37,12 @@ export const Subscription: React.FC = () => {
     return `$${(cents / 100).toFixed(2)}`;
   };
 
-  const formatLimit = (limit: number | typeof Infinity | null | undefined) => {
+  const formatLimit = (limit: number | typeof Infinity | string | null | undefined) => {
     if (limit === null || limit === undefined) {
       return '0';
     }
-    if (limit === Infinity) {
+    // 处理字符串 "unlimited"（来自 API 序列化）
+    if (limit === 'unlimited' || limit === Infinity) {
       return 'Unlimited';
     }
     return limit.toString();
