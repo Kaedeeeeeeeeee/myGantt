@@ -71,24 +71,6 @@ export const Subscription: React.FC = () => {
         <p className="subscription-subtitle">Choose the plan that best fits your needs</p>
       </div>
 
-      {currentSubscription && (
-        <div className="current-subscription">
-          <div className="current-subscription-content">
-            <div>
-              <span className="current-label">Current Plan:</span>
-              <span className="current-plan">{currentSubscription.plan || SubscriptionPlan.FREE}</span>
-            </div>
-            {currentSubscription.endDate && (
-              <div className="current-date">
-                {currentSubscription.plan !== SubscriptionPlan.FREE && (
-                  <span>Renews on {new Date(currentSubscription.endDate).toLocaleDateString()}</span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       <div className="period-selector">
         <button
           className={`period-button ${selectedPeriod === 'monthly' ? 'active' : ''}`}
