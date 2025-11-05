@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useI18n } from '../../contexts/I18nContext';
 import { FeedbackModal } from '../FeedbackModal/FeedbackModal';
+import { useQuery } from '@tanstack/react-query';
+import { subscriptionApi } from '../../api/subscription';
+import { SubscriptionPlan } from '../../types';
 import './UserMenu.css';
 
 // Buy Me a Coffee 链接配置 - 可以从环境变量读取
@@ -13,6 +16,13 @@ export const UserMenu: React.FC = () => {
   const [showMenu, setShowMenu] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // 获取订阅信息
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: subscriptionApi.getCurrent,
+    enabled: !!user,
+  });
 
   // 点击外部关闭菜单
   useEffect(() => {
@@ -52,23 +62,36 @@ export const UserMenu: React.FC = () => {
 
   return (
     <div className="user-menu-container" ref={menuRef}>
-      <button
-        className="user-avatar-button"
-        onClick={() => setShowMenu(!showMenu)}
-        title={user.name || user.email}
-      >
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={user.name || user.email}
-            className="user-avatar"
-          />
-        ) : (
-          <div className="user-avatar-placeholder">
-            {(user.name || user.email).charAt(0).toUpperCase()}
+      <div className="user-menu-header-wrapper">
+        <button
+          className="user-avatar-button"
+          onClick={() => setShowMenu(!showMenu)}
+          title={user.name || user.email}
+        >
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.name || user.email}
+              className="user-avatar"
+            />
+          ) : (
+            <div className="user-avatar-placeholder">
+              {(user.name || user.email).charAt(0).toUpperCase()}
+            </div>
+          )}
+        </button>
+        {/* 订阅状态标签 */}
+        {subscription?.plan === SubscriptionPlan.PRO && (
+          <div className="subscription-badge subscription-badge-pro">
+            PRO
           </div>
         )}
-      </button>
+        {subscription?.plan === SubscriptionPlan.BASIC && (
+          <div className="subscription-badge subscription-badge-basic">
+            BASIC
+          </div>
+        )}
+      </div>
 
       {showMenu && (
         <div className="user-menu-dropdown">

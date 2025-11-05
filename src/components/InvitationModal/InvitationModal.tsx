@@ -21,6 +21,7 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({
   const [role, setRole] = useState<ProjectRole>('VIEWER');
   const [createdInvitation, setCreatedInvitation] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -31,6 +32,14 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({
     onSuccess: (invitation) => {
       setCreatedInvitation(invitation);
       queryClient.invalidateQueries({ queryKey: ['projectInvitations', projectId] });
+      setError(null);
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 403) {
+        setError(error.response?.data?.message || 'Member limit reached. Please upgrade to add more members.');
+      } else {
+        setError(error.response?.data?.message || 'Failed to create invitation');
+      }
     },
   });
 
@@ -55,6 +64,7 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({
     setCreatedInvitation(null);
     setInviteeEmail('');
     setRole('VIEWER');
+    setError(null);
   };
 
   if (createdInvitation) {
@@ -128,7 +138,12 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({
               <option value="ADMIN">Admin (Manage Members)</option>
             </select>
           </div>
-          {createMutation.error && (
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+          {createMutation.error && !error && (
             <div className="error-message">
               {(createMutation.error as any).response?.data?.message || 'Failed to create invitation'}
             </div>

@@ -1,8 +1,22 @@
+export enum SubscriptionPlan {
+  FREE = 'FREE',
+  BASIC = 'BASIC',
+  PRO = 'PRO',
+}
+
+export enum SubscriptionStatus {
+  ACTIVE = 'ACTIVE',
+  CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
+}
+
 export interface User {
   id: string;
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  subscriptionPlan?: SubscriptionPlan;
+  subscriptionStatus?: SubscriptionStatus;
 }
 
 export interface Task {

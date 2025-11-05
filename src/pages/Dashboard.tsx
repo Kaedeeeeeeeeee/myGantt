@@ -7,6 +7,7 @@ import { TaskForm } from '../components/TaskForm/TaskForm';
 import { LanguageSwitcher } from '../components/LanguageSwitcher/LanguageSwitcher';
 import { ProjectMembers } from '../components/ProjectMembers/ProjectMembers';
 import { UserMenu } from '../components/UserMenu/UserMenu';
+import { SubscriptionToast } from '../components/SubscriptionToast/SubscriptionToast';
 import { useI18n } from '../contexts/I18nContext';
 import { useAuth } from '../contexts/AuthContext';
 import { formatDate } from '../utils/dateUtils';
@@ -40,6 +41,7 @@ function Dashboard() {
   const [editingProjectName, setEditingProjectName] = useState<string>('');
   const [newProjectName, setNewProjectName] = useState('');
   const [showPermissionToast, setShowPermissionToast] = useState(false);
+  const [subscriptionToast, setSubscriptionToast] = useState<string | null>(null);
   const ganttChartRef = useRef<GanttChartRef>(null);
   const hasAutoScrolledRef = useRef(false);
   const isDeletingRef = useRef<string | null>(null);
@@ -82,6 +84,11 @@ function Dashboard() {
       setCurrentProjectIdState(newProject.id);
       localStorage.setItem(CURRENT_PROJECT_KEY, newProject.id);
       setNewProjectName('');
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 403) {
+        setSubscriptionToast(error.response?.data?.message || 'Project limit reached. Please upgrade to create more projects.');
+      }
     },
   });
 
@@ -867,6 +874,14 @@ function Dashboard() {
         <div className="permission-toast">
           {t('permission.denied')}
         </div>
+      )}
+
+      {/* 订阅限制提示 */}
+      {subscriptionToast && (
+        <SubscriptionToast
+          message={subscriptionToast}
+          onClose={() => setSubscriptionToast(null)}
+        />
       )}
     </div>
   );
