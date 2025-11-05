@@ -20,6 +20,7 @@ export const Subscription: React.FC = () => {
     queryKey: ['subscription'],
     queryFn: subscriptionApi.getCurrent,
     enabled: !!user,
+    retry: 1,
   });
 
   const handleSubscribe = async (_plan: SubscriptionPlan) => {
@@ -29,12 +30,21 @@ export const Subscription: React.FC = () => {
     alert('Stripe integration coming soon!');
   };
 
-  const formatPrice = (cents: number) => {
+  const formatPrice = (cents: number | null | undefined) => {
+    if (!cents || typeof cents !== 'number') {
+      return '$0.00';
+    }
     return `$${(cents / 100).toFixed(2)}`;
   };
 
-  const formatLimit = (limit: number | typeof Infinity) => {
-    return limit === Infinity ? 'Unlimited' : limit.toString();
+  const formatLimit = (limit: number | typeof Infinity | null | undefined) => {
+    if (limit === null || limit === undefined) {
+      return '0';
+    }
+    if (limit === Infinity) {
+      return 'Unlimited';
+    }
+    return limit.toString();
   };
 
   if (plansLoading) {
@@ -65,7 +75,7 @@ export const Subscription: React.FC = () => {
           <div className="current-subscription-content">
             <div>
               <span className="current-label">Current Plan:</span>
-              <span className="current-plan">{currentSubscription.plan}</span>
+              <span className="current-plan">{currentSubscription.plan || SubscriptionPlan.FREE}</span>
             </div>
             {currentSubscription.endDate && (
               <div className="current-date">
@@ -98,13 +108,22 @@ export const Subscription: React.FC = () => {
 
       <div className="plans-grid">
         {plans.map((plan) => {
-          const isCurrentPlan = currentSubscription?.plan === plan.plan;
+          // 安全访问 plan 数据
+          if (!plan || !plan.limits) {
+            return null;
+          }
+
+          const subscription = currentSubscription as CurrentSubscription | undefined;
+          const isCurrentPlan = (subscription?.plan || SubscriptionPlan.FREE) === plan.plan;
           const isFree = plan.plan === SubscriptionPlan.FREE;
           const price = selectedPeriod === 'yearly' 
-            ? (currentSubscription?.isFirstTimeSubscriber && plan.yearlyFirstTimePrice 
+            ? ((subscription?.isFirstTimeSubscriber ?? false) && plan.yearlyFirstTimePrice 
                 ? plan.yearlyFirstTimePrice 
                 : plan.yearlyPrice)
             : plan.monthlyPrice;
+
+          // 确保 price 不为 null/undefined
+          const safePrice = price ?? null;
 
           return (
             <div
@@ -114,9 +133,9 @@ export const Subscription: React.FC = () => {
               {isCurrentPlan && <div className="current-badge">Current Plan</div>}
               <div className="plan-header">
                 <h2 className="plan-name">{plan.name}</h2>
-                {!isFree && price && (
+                {!isFree && safePrice && (
                   <div className="plan-price">
-                    <span className="price-amount">{formatPrice(price)}</span>
+                    <span className="price-amount">{formatPrice(safePrice)}</span>
                     <span className="price-period">/{selectedPeriod === 'monthly' ? 'mo' : 'yr'}</span>
                   </div>
                 )}
