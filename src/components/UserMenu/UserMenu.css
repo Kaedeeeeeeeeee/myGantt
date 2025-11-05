@@ -30,6 +30,10 @@
   background: #000;
 }
 
+.subscription-badge-free {
+  background: #6c757d;
+}
+
 .user-avatar-button {
   background: none;
   border: none;

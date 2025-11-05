@@ -9,6 +9,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { Invitation } from './pages/Invitation';
+import { Subscription } from './pages/Subscription';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -40,6 +41,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                   element={
                     <ProtectedRoute>
                       <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/subscription"
+                  element={
+                    <ProtectedRoute>
+                      <Subscription />
                     </ProtectedRoute>
                   }
                 />

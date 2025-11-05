@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useI18n } from '../../contexts/I18nContext';
 import { FeedbackModal } from '../FeedbackModal/FeedbackModal';
@@ -13,6 +14,7 @@ const BUY_ME_A_COFFEE_URL = import.meta.env.VITE_BUY_ME_A_COFFEE_URL;
 export const UserMenu: React.FC = () => {
   const { user, logout } = useAuth();
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -55,6 +57,11 @@ export const UserMenu: React.FC = () => {
     setShowMenu(false);
   };
 
+  const handleSubscription = () => {
+    navigate('/subscription');
+    setShowMenu(false);
+  };
+
   const handleLogout = () => {
     logout();
     setShowMenu(false);
@@ -91,6 +98,11 @@ export const UserMenu: React.FC = () => {
             BASIC
           </div>
         )}
+        {(!subscription || subscription?.plan === SubscriptionPlan.FREE) && (
+          <div className="subscription-badge subscription-badge-free">
+            FREE
+          </div>
+        )}
       </div>
 
       {showMenu && (
@@ -119,6 +131,18 @@ export const UserMenu: React.FC = () => {
               </button>
             </>
           )}
+          
+          <div className="user-menu-divider"></div>
+          
+          <button
+            className="user-menu-item"
+            onClick={handleSubscription}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <span>Subscription</span>
+          </button>
           
           <div className="user-menu-divider"></div>
           
