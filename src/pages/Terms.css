@@ -4,6 +4,7 @@
   padding: 40px 20px;
   display: flex;
   justify-content: center;
+  font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
 }
 
 .legal-content {
@@ -12,22 +13,70 @@
 }
 
 .legal-content h1 {
-  color: black;
+  color: #333;
   font-size: 28px;
   font-weight: bold;
+  text-align: center;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 10px;
   margin-bottom: 30px;
 }
 
 .legal-text {
-  color: black;
+  color: #333;
   line-height: 1.8;
   margin-bottom: 40px;
 }
 
+.legal-text h2 {
+  color: #333;
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+.legal-text p {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.legal-text ul {
+  margin-left: 20px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.legal-text li {
+  margin-bottom: 8px;
+}
+
+.legal-text ul ul {
+  margin-left: 20px;
+  margin-top: 8px;
+}
+
+.last-updated {
+  margin-top: 40px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.legal-footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #777;
+  margin-bottom: 30px;
+}
+
 .back-link {
+  display: block;
+  text-align: center;
   color: black;
   text-decoration: underline;
   font-size: 14px;
+  margin-top: 20px;
 }
 
 .back-link:hover {
