@@ -10,6 +10,9 @@ import { Login } from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { Invitation } from './pages/Invitation';
 import { Subscription } from './pages/Subscription';
+import { Terms } from './pages/Terms';
+import { Privacy } from './pages/Privacy';
+import { Tokushoho } from './pages/Tokushoho';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -32,6 +35,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/tokushoho" element={<Tokushoho />} />
                 <Route
                   path="/invitation/:token"
                   element={<Invitation />}

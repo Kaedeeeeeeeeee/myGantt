@@ -1,10 +1,12 @@
 .login-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background: white;
   padding: 20px;
+  position: relative;
 }
 
 .login-card {
@@ -68,5 +70,26 @@
 
 .google-icon {
   flex-shrink: 0;
+}
+
+.login-footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.login-footer a {
+  color: black;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.login-footer a:hover {
+  opacity: 0.7;
+}
+
+.footer-separator {
+  margin: 0 8px;
+  color: black;
 }
 

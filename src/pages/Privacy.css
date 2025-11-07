@@ -1,0 +1,36 @@
+.legal-page {
+  min-height: 100vh;
+  background: white;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.legal-content {
+  max-width: 800px;
+  width: 100%;
+}
+
+.legal-content h1 {
+  color: black;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.legal-text {
+  color: black;
+  line-height: 1.8;
+  margin-bottom: 40px;
+}
+
+.back-link {
+  color: black;
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+.back-link:hover {
+  opacity: 0.7;
+}
+
