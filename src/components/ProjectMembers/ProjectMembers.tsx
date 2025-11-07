@@ -47,6 +47,7 @@ export const ProjectMembers: React.FC<ProjectMembersProps> = ({
     mutationFn: (userId: string) => memberApi.removeMember(projectId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projectMembers', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['projectInvitations', projectId] });
     },
   });
 
@@ -54,6 +55,10 @@ export const ProjectMembers: React.FC<ProjectMembersProps> = ({
     mutationFn: (invitationId: string) => invitationApi.cancel(invitationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projectInvitations', projectId] });
+    },
+    onError: (error: any) => {
+      console.error('Failed to cancel invitation:', error);
+      alert(error.response?.data?.message || 'Failed to cancel invitation. Please try again.');
     },
   });
 
@@ -238,6 +243,7 @@ export const ProjectMembers: React.FC<ProjectMembersProps> = ({
                     onClick={() => handleCancelInvitation(invitation.id)}
                     className="btn-cancel-invitation"
                     title="Cancel"
+                    disabled={cancelInvitationMutation.isPending}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18"></line>
