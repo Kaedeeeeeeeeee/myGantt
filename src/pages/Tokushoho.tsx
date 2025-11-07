@@ -15,7 +15,7 @@ export const Tokushoho: React.FC = () => {
           <dd>張詩楓</dd>
 
           <dt>所在地</dt>
-          <dd>〒980-0803<br />
+          <dd>〒980-0022<br />
             宮城県仙台市青葉区五橋２−１０−１１　６１１</dd>
 
           <dt>お問い合わせ先</dt>
