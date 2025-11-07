@@ -88,7 +88,7 @@ export const Login: React.FC = () => {
             <rect
               x="30"
               y="25"
-              width="60"
+              width="50"
               height="12"
               fill="black"
             />
