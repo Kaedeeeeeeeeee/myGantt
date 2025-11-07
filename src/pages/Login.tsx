@@ -95,7 +95,7 @@ export const Login: React.FC = () => {
             <rect
               x="40"
               y="45"
-              width="70"
+              width="60"
               height="12"
               fill="black"
             />
