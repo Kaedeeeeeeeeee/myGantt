@@ -17,14 +17,25 @@
   width: 100%;
 }
 
+.gantt-graphic {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.gantt-svg {
+  display: block;
+}
+
 .login-card h1 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: black;
   font-size: 28px;
+  font-weight: bold;
 }
 
 .login-subtitle {
-  color: #666;
+  color: black;
   margin-bottom: 30px;
   font-size: 14px;
 }
@@ -37,11 +48,11 @@
   width: 100%;
   padding: 12px 24px;
   background: white;
-  border: 1px solid #dadce0;
+  border: 1px solid black;
   border-radius: 4px;
   font-size: 16px;
   font-weight: 500;
-  color: #3c4043;
+  color: black;
   cursor: pointer;
   transition: all 0.2s;
 }
