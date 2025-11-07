@@ -19,7 +19,7 @@ export const ProjectMembers: React.FC<ProjectMembersProps> = ({
   projectName,
   userRole,
 }) => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const queryClient = useQueryClient();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showCopyToast, setShowCopyToast] = useState(false);
@@ -88,19 +88,22 @@ export const ProjectMembers: React.FC<ProjectMembersProps> = ({
     const diff = expiry.getTime() - now.getTime();
 
     if (diff <= 0) {
-      return '已过期';
+      return t('invitation.expiry.expired');
     }
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
+    // 根据语言添加空格（英文和日文需要空格，中文不需要）
+    const space = language === 'en' || language === 'ja' ? ' ' : '';
+
     if (days > 0) {
-      return `${days}天${hours}小时`;
+      return `${days}${space}${t('invitation.expiry.days')}${space}${hours}${space}${t('invitation.expiry.hours')}`;
     } else if (hours > 0) {
-      return `${hours}小时${minutes}分钟`;
+      return `${hours}${space}${t('invitation.expiry.hours')}${space}${minutes}${space}${t('invitation.expiry.minutes')}`;
     } else {
-      return `${minutes}分钟`;
+      return `${minutes}${space}${t('invitation.expiry.minutes')}`;
     }
   };
 
@@ -225,7 +228,7 @@ export const ProjectMembers: React.FC<ProjectMembersProps> = ({
                   </div>
                   <div className="invitation-link-section">
                     <span className="invitation-link">{invitationLink}</span>
-                    <span className="invitation-expiry">剩余: {timeRemaining}</span>
+                    <span className="invitation-expiry">{t('invitation.expiry.remaining')}: {timeRemaining}</span>
                   </div>
                 </div>
                 <div className="invitation-actions">

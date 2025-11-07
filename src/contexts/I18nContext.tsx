@@ -75,6 +75,11 @@ const translations: Record<Language, Record<string, string>> = {
     'feedback.user.name': '姓名',
     'feedback.user.email': '邮箱',
     'feedback.user.name.notset': '未设置',
+    'invitation.expiry.remaining': '剩余',
+    'invitation.expiry.expired': '已过期',
+    'invitation.expiry.days': '天',
+    'invitation.expiry.hours': '小时',
+    'invitation.expiry.minutes': '分钟',
   },
   en: {
     'app.title': 'My Gantt - Project Gantt Chart',
@@ -135,6 +140,11 @@ const translations: Record<Language, Record<string, string>> = {
     'feedback.user.name': 'Name',
     'feedback.user.email': 'Email',
     'feedback.user.name.notset': 'Not Set',
+    'invitation.expiry.remaining': 'Remaining',
+    'invitation.expiry.expired': 'Expired',
+    'invitation.expiry.days': 'days',
+    'invitation.expiry.hours': 'hours',
+    'invitation.expiry.minutes': 'minutes',
   },
   ja: {
     'app.title': 'My Gantt - プロジェクトガントチャート',
@@ -195,6 +205,11 @@ const translations: Record<Language, Record<string, string>> = {
     'feedback.user.name': '名前',
     'feedback.user.email': 'メール',
     'feedback.user.name.notset': '未設定',
+    'invitation.expiry.remaining': '残り',
+    'invitation.expiry.expired': '期限切れ',
+    'invitation.expiry.days': '日',
+    'invitation.expiry.hours': '時間',
+    'invitation.expiry.minutes': '分',
   },
 };
 
