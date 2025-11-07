@@ -118,8 +118,28 @@ export const Subscription: React.FC = () => {
                 <h2 className="plan-name">{plan.name}</h2>
                 {!isFree && safePrice && (
                   <div className="plan-price">
-                    <span className="price-amount">{formatPrice(safePrice)}</span>
-                    <span className="price-period">/{selectedPeriod === 'monthly' ? 'mo' : 'yr'}</span>
+                    {selectedPeriod === 'yearly' && plan.monthlyPrice ? (
+                      <>
+                        <div className="price-comparison">
+                          <span className="price-original">
+                            <span className="price-amount">{formatPrice(plan.monthlyPrice)}</span>
+                            <span className="price-period">/mo</span>
+                          </span>
+                          <span className="price-discounted">
+                            <span className="price-amount">{formatPrice(safePrice / 12)}</span>
+                            <span className="price-period">/mo</span>
+                          </span>
+                        </div>
+                        <div className="price-yearly-note">
+                          Billed annually ({formatPrice(safePrice)}/yr)
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="price-amount">{formatPrice(safePrice)}</span>
+                        <span className="price-period">/mo</span>
+                      </>
+                    )}
                   </div>
                 )}
                 {isFree && <div className="plan-price free">Free</div>}
