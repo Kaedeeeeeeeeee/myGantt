@@ -137,13 +137,6 @@ export const Login: React.FC = () => {
           Sign in with Google
         </button>
       </div>
-      <footer className="login-footer">
-        <Link to="/terms">利用規約</Link>
-        <span className="footer-separator">|</span>
-        <Link to="/privacy">プライバシーポリシー</Link>
-        <span className="footer-separator">|</span>
-        <Link to="/tokushoho">特定商取引法に基づく表記</Link>
-      </footer>
     </div>
   );
 };
